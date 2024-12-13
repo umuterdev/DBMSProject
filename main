@@ -124,6 +124,46 @@ CREATE TABLE Sales_Transaction_Payment (
   FOREIGN KEY (payment_method_id) REFERENCES Payment_Method(payment_method_id)
 );
 
+-- Additional Table for Transaction Logging
+
+CREATE TABLE Payment_Method_Transaction (
+  transaction_id INT PRIMARY KEY,
+  payment_method_id INT,
+  method_name VARCHAR(50),
+  action VARCHAR(50),
+  transaction_date DATE DEFAULT SYSDATE,
+  description VARCHAR(255),
+  FOREIGN KEY (payment_method_id) REFERENCES Payment_Method(payment_method_id)
+);
+
+-- Sequence for Transaction Table
+CREATE SEQUENCE SEQ_TRANSACTION_ID
+START WITH 1
+INCREMENT BY 1
+NOCACHE;
+
+-- Trigger for Logging Insertions to Payment_Method Table
+
+CREATE OR REPLACE TRIGGER trg_after_payment_method_insert
+AFTER INSERT ON Payment_Method
+FOR EACH ROW
+BEGIN
+  INSERT INTO Payment_Method_Transaction (
+    transaction_id,
+    payment_method_id,
+    method_name,
+    action,
+    description
+  ) VALUES (
+    SEQ_TRANSACTION_ID.NEXTVAL,
+    :NEW.payment_method_id,
+    :NEW.method_name,
+    'INSERT',
+    :NEW.description
+  );
+END;
+/
+
 -- Procedures
 
 -- INSERTCUSTOMER
