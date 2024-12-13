@@ -225,3 +225,19 @@ BEGIN
     GROUP BY email
   );
 END;
+/
+
+-- Query with Dynamic Constraint
+CREATE OR REPLACE PROCEDURE GetTransactionsByDate (
+    p_start_date DATE,
+    p_end_date DATE
+) AS
+BEGIN
+    FOR rec IN (
+        SELECT transaction_id, total_amount
+        FROM Sales_Transaction
+        WHERE transaction_date BETWEEN p_start_date AND p_end_date
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('Transaction ID: ' || rec.transaction_id || ', Amount: ' || rec.total_amount);
+    END LOOP;
+END;
