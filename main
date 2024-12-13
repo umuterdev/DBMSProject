@@ -1,0 +1,176 @@
+-- Table Definitions
+
+CREATE TABLE Payment_Method (
+  payment_method_id INT PRIMARY KEY,
+  method_name VARCHAR(50),
+  description VARCHAR(255)
+);
+
+CREATE TABLE Employee (
+  employee_id INT PRIMARY KEY,
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  department VARCHAR(50),
+  position VARCHAR(50),
+  hire_date DATE
+);
+
+CREATE TABLE Customer (
+  customer_id INT PRIMARY KEY,
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  email VARCHAR(100) UNIQUE,
+  phone_number VARCHAR(15),
+  birth_date DATE,
+  registration_date DATE
+);
+
+CREATE TABLE Customer_Contact (
+  contact_info_id INT PRIMARY KEY,
+  customer_id INT,
+  contact_type VARCHAR(50),
+  contact_value VARCHAR(255),
+  FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+);
+
+CREATE TABLE Loyalty_Program (
+  program_details_id INT PRIMARY KEY,
+  customer_id INT,
+  points_earned INT DEFAULT 0,
+  loyalty_tier VARCHAR(50),
+  FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+);
+
+CREATE TABLE Product_Category (
+  category_id INT PRIMARY KEY,
+  category_name VARCHAR(100),
+  description VARCHAR(255)
+);
+
+CREATE TABLE Supplier (
+  supplier_id INT PRIMARY KEY,
+  supplier_name VARCHAR(100),
+  contact_person VARCHAR(50),
+  contact_email VARCHAR(100),
+  phone_number VARCHAR(15),
+  address VARCHAR(255)
+);
+
+CREATE TABLE Product (
+  product_id INT PRIMARY KEY,
+  category_id INT,
+  product_name VARCHAR(100),
+  product_code VARCHAR(50) UNIQUE,
+  unit_price DECIMAL(10, 2),
+  stock_quantity INT DEFAULT 0,
+  product_status VARCHAR(50),
+  FOREIGN KEY (category_id) REFERENCES Product_Category(category_id)
+);
+
+CREATE TABLE Product_Supplier (
+  product_supplier_id INT PRIMARY KEY,
+  product_id INT,
+  supplier_id INT,
+  FOREIGN KEY (product_id) REFERENCES Product(product_id),
+  FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id)
+);
+
+CREATE TABLE Inventory_Log (
+  log_id INT PRIMARY KEY,
+  product_id INT,
+  employee_id INT,
+  log_date DATE,
+  log_type VARCHAR(50),
+  quantity_changed INT,
+  reason VARCHAR(255),
+  FOREIGN KEY (product_id) REFERENCES Product(product_id),
+  FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
+);
+
+CREATE TABLE Sales_Transaction (
+  transaction_id INT PRIMARY KEY,
+  customer_id INT,
+  payment_method_id INT,
+  transaction_date DATE,
+  total_amount DECIMAL(10, 2),
+  transaction_status VARCHAR(50),
+  FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+  FOREIGN KEY (payment_method_id) REFERENCES Payment_Method(payment_method_id)
+);
+
+CREATE TABLE Sales_Transaction_Item (
+  transaction_item_id INT PRIMARY KEY,
+  transaction_id INT,
+  product_id INT,
+  quantity INT,
+  item_price DECIMAL(10, 2),
+  FOREIGN KEY (transaction_id) REFERENCES Sales_Transaction(transaction_id),
+  FOREIGN KEY (product_id) REFERENCES Product(product_id)
+);
+
+CREATE TABLE Supplier_Contact (
+  contact_info_id INT PRIMARY KEY,
+  supplier_id INT,
+  contact_type VARCHAR(50),
+  contact_value VARCHAR(255),
+  FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id)
+);
+
+CREATE TABLE Sales_Transaction_Payment (
+  transaction_payment_id INT PRIMARY KEY,
+  transaction_id INT,
+  payment_method_id INT,
+  FOREIGN KEY (transaction_id) REFERENCES Sales_Transaction(transaction_id),
+  FOREIGN KEY (payment_method_id) REFERENCES Payment_Method(payment_method_id)
+);
+
+-- Procedures
+
+-- INSERTCUSTOMER
+CREATE OR REPLACE PROCEDURE INSERTCUSTOMER(
+  p_customer_id INT,
+  p_first_name VARCHAR2,
+  p_last_name VARCHAR2,
+  p_email VARCHAR2,
+  p_phone_number VARCHAR2,
+  p_birth_date DATE,
+  p_registration_date DATE
+) AS
+BEGIN
+  INSERT INTO Customer (
+    customer_id, first_name, last_name, email, phone_number, birth_date, registration_date
+  ) VALUES (
+    p_customer_id, p_first_name, p_last_name, p_email, p_phone_number, p_birth_date, p_registration_date
+  );
+END;
+/
+
+-- UPDATECUSTOMERINFO
+CREATE OR REPLACE PROCEDURE UPDATECUSTOMERINFO(
+  p_customer_id INT,
+  p_first_name VARCHAR2 DEFAULT NULL,
+  p_last_name VARCHAR2 DEFAULT NULL,
+  p_email VARCHAR2 DEFAULT NULL,
+  p_phone_number VARCHAR2 DEFAULT NULL,
+  p_birth_date DATE DEFAULT NULL
+) AS
+BEGIN
+  UPDATE Customer
+  SET 
+    first_name = NVL(p_first_name, first_name),
+    last_name = NVL(p_last_name, last_name),
+    email = NVL(p_email, email),
+    phone_number = NVL(p_phone_number, phone_number),
+    birth_date = NVL(p_birth_date, birth_date)
+  WHERE customer_id = p_customer_id;
+END;
+/
+
+-- DELETECUSTOMER
+CREATE OR REPLACE PROCEDURE DELETECUSTOMER(
+  p_customer_id INT
+) AS
+BEGIN
+  DELETE FROM Customer WHERE customer_id = p_customer_id;
+END;
+/
