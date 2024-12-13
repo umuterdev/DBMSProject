@@ -214,3 +214,14 @@ BEGIN
   DELETE FROM Customer WHERE customer_id = p_customer_id;
 END;
 /
+
+-- Procedure to Remove Duplicate Records
+CREATE OR REPLACE PROCEDURE RemoveDuplicateCustomers AS
+BEGIN
+  DELETE FROM Customer
+  WHERE ROWID NOT IN (
+    SELECT MIN(ROWID)
+    FROM Customer
+    GROUP BY email
+  );
+END;
